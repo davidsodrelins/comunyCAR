@@ -1,0 +1,35 @@
+<div class="app-container">
+  <!-- Header/Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <h1>🚗 comunyCAR</h1>
+      </div>
+
+      <div *ngIf="isAuthenticated" class="navbar-menu">
+        <ul class="nav-links">
+          <li><a (click)="navigateTo('/dashboard')">Dashboard</a></li>
+          <li><a (click)="navigateTo('/send-alert')">Enviar Alerta</a></li>
+          <li><a (click)="navigateTo('/vehicles')">Veículos</a></li>
+          <li><a (click)="navigateTo('/credits')">Créditos</a></li>
+          <li><a (click)="navigateTo('/notifications')">Notificações</a></li>
+        </ul>
+
+        <div class="navbar-user">
+          <span *ngIf="currentUser" class="user-name">{{ currentUser.name }}</span>
+          <button (click)="logout()" class="btn-logout">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2024 comunyCAR - Conectando pedestres com proprietários de veículos</p>
+  </footer>
+</div>

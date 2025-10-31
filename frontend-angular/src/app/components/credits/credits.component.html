@@ -1,0 +1,99 @@
+<div class="credits-container">
+  <div class="credits-header">
+    <h1>Meus Créditos</h1>
+    <div class="current-balance">
+      <p>Saldo Atual</p>
+      <h2>{{ creditsBalance }} créditos</h2>
+    </div>
+  </div>
+
+  <div class="credits-content">
+    <!-- Seção de Compra -->
+    <div class="purchase-section">
+      <h3>Comprar Créditos</h3>
+      <p class="info-text">Cada alerta personalizado custa 1 crédito. Alertas fixos são gratuitos.</p>
+
+      <!-- Pacotes Predefinidos -->
+      <div class="packages-grid">
+        <div
+          *ngFor="let pkg of packages"
+          class="package-card"
+          [class.selected]="purchaseAmount === pkg.amount"
+          (click)="selectPackage(pkg.amount)"
+        >
+          <div class="package-amount">{{ pkg.amount }}</div>
+          <div class="package-label">créditos</div>
+          <div class="package-price">{{ pkg.price }}</div>
+        </div>
+      </div>
+
+      <!-- Método de Pagamento -->
+      <div class="payment-method">
+        <label for="paymentMethod">Método de Pagamento</label>
+        <select
+          id="paymentMethod"
+          [(ngModel)]="paymentMethod"
+          class="form-control"
+          [disabled]="submitting"
+        >
+          <option value="stripe">Cartão de Crédito (Stripe)</option>
+          <option value="paypal">PayPal</option>
+        </select>
+      </div>
+
+      <!-- Botão de Compra -->
+      <button
+        (click)="purchaseCredits()"
+        class="btn btn-primary btn-large"
+        [disabled]="submitting"
+      >
+        <span *ngIf="!submitting">Comprar {{ purchaseAmount }} Créditos</span>
+        <span *ngIf="submitting">Processando...</span>
+      </button>
+    </div>
+
+    <!-- Histórico de Transações -->
+    <div class="transactions-section">
+      <h3>Histórico de Transações</h3>
+
+      <div *ngIf="loading" class="loading">
+        <p>Carregando transações...</p>
+      </div>
+
+      <div *ngIf="!loading && transactions.length === 0" class="empty-state">
+        <p>Nenhuma transação realizada ainda.</p>
+      </div>
+
+      <div *ngIf="!loading && transactions.length > 0" class="transactions-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Tipo</th>
+              <th>Créditos</th>
+              <th>Saldo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let transaction of transactions">
+              <td>{{ transaction.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span
+                  class="badge"
+                  [class.badge-success]="transaction.type === 'Compra'"
+                  [class.badge-danger]="transaction.type === 'Envio'"
+                >
+                  {{ transaction.type }}
+                </span>
+              </td>
+              <td [class.positive]="transaction.type === 'Compra'">
+                {{ transaction.type === 'Compra' ? '+' : '-' }}{{ transaction.amount }}
+              </td>
+              <td>{{ transaction.balance }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

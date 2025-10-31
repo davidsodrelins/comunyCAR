@@ -1,0 +1,121 @@
+<div class="send-alert-container">
+  <div class="send-alert-header">
+    <h1>Enviar Alerta</h1>
+    <p>Ajude outros motoristas informando sobre problemas em seus veículos</p>
+  </div>
+
+  <div class="send-alert-content">
+    <!-- Informações de Créditos -->
+    <div class="credits-info">
+      <p>💳 Créditos disponíveis: <strong>{{ creditsBalance }}</strong></p>
+      <small>Alertas fixos são gratuitos. Alertas personalizados custam 1 crédito cada.</small>
+    </div>
+
+    <!-- Formulário -->
+    <form (ngSubmit)="sendAlert()" class="alert-form">
+      <!-- Campo de Placa -->
+      <div class="form-group">
+        <label for="plate">Placa do Veículo *</label>
+        <input
+          type="text"
+          id="plate"
+          [(ngModel)]="plate"
+          name="plate"
+          placeholder="Ex: ABC-1234"
+          class="form-control"
+          [disabled]="submitting"
+        />
+        <small>Digite a placa do veículo (formato: ABC-1234)</small>
+      </div>
+
+      <!-- Tipo de Alerta -->
+      <div class="form-group">
+        <label>Tipo de Alerta *</label>
+        <div class="alert-type-selector">
+          <div class="alert-type-option">
+            <input
+              type="radio"
+              id="fixed"
+              [(ngModel)]="usePersonalized"
+              [value]="false"
+              name="alertType"
+              [disabled]="submitting"
+            />
+            <label for="fixed">Alerta Fixo (Gratuito)</label>
+          </div>
+          <div class="alert-type-option">
+            <input
+              type="radio"
+              id="personalized"
+              [(ngModel)]="usePersonalized"
+              [value]="true"
+              name="alertType"
+              [disabled]="submitting"
+            />
+            <label for="personalized">Alerta Personalizado (1 crédito)</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Alertas Fixos -->
+      <div *ngIf="!usePersonalized" class="form-group">
+        <label for="fixedAlert">Selecione o tipo de alerta *</label>
+        <select
+          id="fixedAlert"
+          [(ngModel)]="selectedAlertId"
+          name="selectedAlertId"
+          class="form-control"
+          [disabled]="submitting || loading"
+        >
+          <option [value]="null">-- Selecione um alerta --</option>
+          <option *ngFor="let alert of fixedAlerts" [value]="alert.id">
+            {{ alert.title }}
+          </option>
+        </select>
+        <div *ngIf="selectedAlertId" class="alert-description">
+          <p>{{ (fixedAlerts | filter: selectedAlertId)[0]?.message }}</p>
+        </div>
+      </div>
+
+      <!-- Mensagem Personalizada -->
+      <div *ngIf="usePersonalized" class="form-group">
+        <label for="message">Mensagem Personalizada *</label>
+        <textarea
+          id="message"
+          [(ngModel)]="personalizedMessage"
+          name="personalizedMessage"
+          placeholder="Digite sua mensagem aqui (máximo 500 caracteres)"
+          class="form-control"
+          rows="5"
+          maxlength="500"
+          [disabled]="submitting"
+        ></textarea>
+        <small>{{ personalizedMessage.length }}/500 caracteres</small>
+      </div>
+
+      <!-- Botão de Envio -->
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="submitting || loading"
+        >
+          <span *ngIf="!submitting">Enviar Alerta</span>
+          <span *ngIf="submitting">Enviando...</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Informações Adicionais -->
+    <div class="alert-info">
+      <h3>ℹ️ Informações Importantes</h3>
+      <ul>
+        <li>Verifique se a placa está correta antes de enviar</li>
+        <li>Seu alerta será enviado para o proprietário do veículo</li>
+        <li>Alertas fixos são anônimos e gratuitos</li>
+        <li>Alertas personalizados requerem créditos</li>
+        <li>Não envie alertas falsos ou ofensivos</li>
+      </ul>
+    </div>
+  </div>
+</div>

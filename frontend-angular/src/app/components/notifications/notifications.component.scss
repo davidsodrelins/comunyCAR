@@ -1,0 +1,306 @@
+.notifications-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+  .notifications-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #007bff;
+
+    h1 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
+    p {
+      margin: 0;
+      color: #666;
+    }
+  }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+  }
+
+  .notifications-content {
+    .preferences-section {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+
+      h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+      }
+
+      .preference-item {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        border-left: 4px solid #007bff;
+
+        .preference-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 10px;
+
+          h4 {
+            margin: 0;
+            color: #333;
+          }
+
+          .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+
+            input {
+              opacity: 0;
+              width: 0;
+              height: 0;
+
+              &:checked + .slider {
+                background-color: #28a745;
+
+                &:before {
+                  transform: translateX(26px);
+                }
+              }
+
+              &:disabled + .slider {
+                opacity: 0.5;
+                cursor: not-allowed;
+              }
+            }
+
+            .slider {
+              position: absolute;
+              cursor: pointer;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background-color: #ccc;
+              transition: 0.4s;
+              border-radius: 24px;
+
+              &:before {
+                position: absolute;
+                content: '';
+                height: 18px;
+                width: 18px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: 0.4s;
+                border-radius: 50%;
+              }
+            }
+          }
+        }
+
+        p {
+          margin: 0 0 10px 0;
+          color: #666;
+          font-size: 14px;
+        }
+
+        .whatsapp-status {
+          background-color: #e7f3ff;
+          padding: 10px;
+          border-radius: 5px;
+          margin-top: 10px;
+
+          p {
+            margin: 5px 0;
+            font-size: 13px;
+          }
+
+          .btn {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+
+            &:hover:not(:disabled) {
+              background-color: #0056b3;
+            }
+
+            &:disabled {
+              background-color: #ccc;
+              cursor: not-allowed;
+            }
+          }
+        }
+      }
+
+      .btn {
+        width: 100%;
+        padding: 12px;
+        margin-top: 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+          background-color: #0056b3;
+        }
+
+        &:disabled {
+          background-color: #ccc;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .whatsapp-form {
+      background-color: #fff3cd;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border-left: 4px solid #ffc107;
+
+      h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+      }
+
+      p {
+        margin: 0 0 15px 0;
+        color: #666;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+
+        label {
+          display: block;
+          margin-bottom: 8px;
+          color: #333;
+          font-weight: 600;
+        }
+
+        .form-control {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          font-size: 14px;
+
+          &:focus {
+            outline: none;
+            border-color: #ffc107;
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.1);
+          }
+
+          &:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+          }
+        }
+
+        small {
+          display: block;
+          margin-top: 5px;
+          color: #999;
+          font-size: 12px;
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+
+        .btn {
+          flex: 1;
+          padding: 12px;
+          border: none;
+          border-radius: 5px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+
+          &.btn-primary {
+            background-color: #007bff;
+            color: white;
+
+            &:hover:not(:disabled) {
+              background-color: #0056b3;
+            }
+          }
+
+          &.btn-secondary {
+            background-color: #6c757d;
+            color: white;
+
+            &:hover:not(:disabled) {
+              background-color: #5a6268;
+            }
+          }
+
+          &:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+          }
+        }
+      }
+
+      .qr-code {
+        text-align: center;
+        padding: 15px;
+        background: white;
+        border-radius: 5px;
+
+        p {
+          margin: 0 0 10px 0;
+          color: #333;
+        }
+
+        img {
+          max-width: 300px;
+          width: 100%;
+          height: auto;
+        }
+      }
+    }
+
+    .info-section {
+      background-color: #d4edda;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #28a745;
+
+      h3 {
+        margin: 0 0 15px 0;
+        color: #155724;
+      }
+
+      ul {
+        margin: 0;
+        padding-left: 20px;
+
+        li {
+          margin-bottom: 8px;
+          color: #155724;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,139 @@
+<div class="notifications-container">
+  <div class="notifications-header">
+    <h1>Preferências de Notificação</h1>
+    <p>Configure como você deseja receber alertas sobre seus veículos</p>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Carregando preferências...</p>
+  </div>
+
+  <div *ngIf="!loading" class="notifications-content">
+    <!-- Preferências de Notificação -->
+    <div class="preferences-section">
+      <h3>Canais de Notificação</h3>
+
+      <div class="preference-item">
+        <div class="preference-header">
+          <h4>📧 Email</h4>
+          <label class="switch">
+            <input
+              type="checkbox"
+              [(ngModel)]="preferences.emailEnabled"
+              [disabled]="submitting"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p>Receba alertas por email</p>
+      </div>
+
+      <div class="preference-item">
+        <div class="preference-header">
+          <h4>💬 WhatsApp</h4>
+          <label class="switch">
+            <input
+              type="checkbox"
+              [(ngModel)]="preferences.whatsappEnabled"
+              [disabled]="submitting"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p>Receba alertas por WhatsApp</p>
+        <div *ngIf="preferences.whatsappEnabled" class="whatsapp-status">
+          <p *ngIf="whatsappStatus.connected">
+            ✅ WhatsApp conectado: {{ whatsappStatus.phoneNumber }}
+          </p>
+          <p *ngIf="!whatsappStatus.connected">
+            ⚠️ WhatsApp não conectado
+          </p>
+          <button
+            (click)="toggleWhatsappForm()"
+            class="btn btn-small"
+            [disabled]="submitting"
+          >
+            {{ whatsappStatus.connected ? 'Desconectar' : 'Conectar' }} WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <div class="preference-item">
+        <div class="preference-header">
+          <h4>🔔 Notificação Push</h4>
+          <label class="switch">
+            <input
+              type="checkbox"
+              [(ngModel)]="preferences.pushEnabled"
+              [disabled]="submitting"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p>Receba notificações push no seu dispositivo (com som de buzina)</p>
+      </div>
+
+      <!-- Botão de Salvar -->
+      <button
+        (click)="updatePreferences()"
+        class="btn btn-primary"
+        [disabled]="submitting"
+      >
+        {{ submitting ? 'Salvando...' : 'Salvar Preferências' }}
+      </button>
+    </div>
+
+    <!-- Formulário de Conexão WhatsApp -->
+    <div *ngIf="showWhatsappForm" class="whatsapp-form">
+      <h3>Conectar WhatsApp</h3>
+      <p>Informe seu número de telefone para conectar ao WhatsApp</p>
+
+      <div class="form-group">
+        <label for="phoneNumber">Número de Telefone</label>
+        <input
+          type="tel"
+          id="phoneNumber"
+          [(ngModel)]="phoneNumber"
+          placeholder="Ex: 11999999999"
+          class="form-control"
+          [disabled]="submitting"
+        />
+        <small>Digite apenas números (ex: 11999999999)</small>
+      </div>
+
+      <div class="form-actions">
+        <button
+          (click)="connectWhatsapp()"
+          class="btn btn-primary"
+          [disabled]="submitting"
+        >
+          {{ submitting ? 'Conectando...' : 'Conectar' }}
+        </button>
+        <button
+          (click)="toggleWhatsappForm()"
+          class="btn btn-secondary"
+          [disabled]="submitting"
+        >
+          Cancelar
+        </button>
+      </div>
+
+      <!-- QR Code -->
+      <div *ngIf="qrCode" class="qr-code">
+        <p>Escaneie este QR code com seu WhatsApp:</p>
+        <img [src]="qrCode" alt="QR Code" />
+      </div>
+    </div>
+
+    <!-- Informações -->
+    <div class="info-section">
+      <h3>ℹ️ Informações</h3>
+      <ul>
+        <li>Email é o canal padrão e recomendado</li>
+        <li>WhatsApp requer conexão via QR code</li>
+        <li>Notificações push funcionam em navegadores e apps</li>
+        <li>Você pode desabilitar qualquer canal a qualquer momento</li>
+      </ul>
+    </div>
+  </div>
+</div>

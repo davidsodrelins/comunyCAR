@@ -1,0 +1,104 @@
+<div class="vehicles-container">
+  <div class="vehicles-header">
+    <h1>Meus Veículos</h1>
+    <button (click)="toggleForm()" class="btn btn-primary">
+      {{ showForm ? 'Cancelar' : '+ Novo Veículo' }}
+    </button>
+  </div>
+
+  <!-- Formulário de Novo Veículo -->
+  <div *ngIf="showForm" class="vehicle-form">
+    <h3>Cadastrar Novo Veículo</h3>
+    <form (ngSubmit)="createVehicle()" class="form">
+      <div class="form-group">
+        <label for="plate">Placa *</label>
+        <input
+          type="text"
+          id="plate"
+          [(ngModel)]="formData.plate"
+          name="plate"
+          placeholder="Ex: ABC-1234"
+          class="form-control"
+          [disabled]="submitting"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="brand">Marca *</label>
+        <input
+          type="text"
+          id="brand"
+          [(ngModel)]="formData.brand"
+          name="brand"
+          placeholder="Ex: Toyota"
+          class="form-control"
+          [disabled]="submitting"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="model">Modelo *</label>
+        <input
+          type="text"
+          id="model"
+          [(ngModel)]="formData.model"
+          name="model"
+          placeholder="Ex: Corolla"
+          class="form-control"
+          [disabled]="submitting"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="color">Cor</label>
+        <input
+          type="text"
+          id="color"
+          [(ngModel)]="formData.color"
+          name="color"
+          placeholder="Ex: Prata"
+          class="form-control"
+          [disabled]="submitting"
+        />
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="submitting">
+        {{ submitting ? 'Cadastrando...' : 'Cadastrar Veículo' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Lista de Veículos -->
+  <div class="vehicles-list">
+    <div *ngIf="loading" class="loading">
+      <p>Carregando veículos...</p>
+    </div>
+
+    <div *ngIf="!loading && vehicles.length === 0" class="empty-state">
+      <p>Você ainda não cadastrou nenhum veículo.</p>
+      <button (click)="toggleForm()" class="btn btn-primary">
+        Cadastrar Primeiro Veículo
+      </button>
+    </div>
+
+    <div *ngIf="!loading && vehicles.length > 0" class="vehicles-grid">
+      <div *ngFor="let vehicle of vehicles" class="vehicle-card">
+        <div class="vehicle-header">
+          <h3>{{ vehicle.plate }}</h3>
+          <span class="badge">{{ vehicle.role }}</span>
+        </div>
+
+        <div class="vehicle-info">
+          <p><strong>Marca:</strong> {{ vehicle.brand }}</p>
+          <p><strong>Modelo:</strong> {{ vehicle.model }}</p>
+          <p *ngIf="vehicle.color"><strong>Cor:</strong> {{ vehicle.color }}</p>
+        </div>
+
+        <div class="vehicle-actions">
+          <button class="btn btn-small btn-secondary">Adicionar Usuário</button>
+          <button class="btn btn-small btn-secondary">Ver Alertas</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

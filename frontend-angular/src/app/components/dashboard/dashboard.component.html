@@ -1,0 +1,57 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <h1>Dashboard - comunyCAR</h1>
+    <button (click)="logout()" class="btn btn-logout">Logout</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Carregando dados...</p>
+  </div>
+
+  <div *ngIf="!loading" class="dashboard-content">
+    <!-- Informações do Usuário -->
+    <div class="user-info">
+      <h2>Bem-vindo, {{ currentUser?.name || 'Usuário' }}!</h2>
+      <p>Email: {{ currentUser?.email }}</p>
+    </div>
+
+    <!-- Cards de Resumo -->
+    <div class="dashboard-cards">
+      <div class="card">
+        <h3>Créditos</h3>
+        <p class="card-value">{{ creditsBalance }}</p>
+        <small>Saldo disponível</small>
+      </div>
+
+      <div class="card">
+        <h3>Veículos</h3>
+        <p class="card-value">{{ vehiclesCount }}</p>
+        <small>Cadastrados</small>
+      </div>
+
+      <div class="card">
+        <h3>Alertas Recebidos</h3>
+        <p class="card-value">{{ alertsReceivedCount }}</p>
+        <small>Total recebido</small>
+      </div>
+
+      <div class="card">
+        <h3>Alertas Enviados</h3>
+        <p class="card-value">{{ alertsSentCount }}</p>
+        <small>Total enviado</small>
+      </div>
+    </div>
+
+    <!-- Menu de Navegação -->
+    <div class="dashboard-menu">
+      <h3>Menu Principal</h3>
+      <ul>
+        <li><a href="/vehicles">Meus Veículos</a></li>
+        <li><a href="/send-alert">Enviar Alerta</a></li>
+        <li><a href="/credits">Comprar Créditos</a></li>
+        <li><a href="/notifications">Preferências de Notificação</a></li>
+        <li><a href="/alerts-history">Histórico de Alertas</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
