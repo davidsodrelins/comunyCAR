@@ -8,6 +8,10 @@ import Home from "./pages/Home";
 import SendAlert from "./pages/SendAlert";
 import Vehicles from "./pages/Vehicles";
 import BuyCredits from "./pages/BuyCredits";
+import Profile from "./pages/Profile";
+import AlertHistory from "./pages/AlertHistory";
+import TransactionHistory from "./pages/TransactionHistory";
+import NotificationPreferences from "./pages/NotificationPreferences";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -17,6 +21,10 @@ function Router() {
       <Route path={"/send-alert"} component={SendAlert} />
       <Route path={"/vehicles"} component={Vehicles} />
       <Route path={"/buy-credits"} component={BuyCredits} />
+      <Route path={"/profile"} component={Profile} />
+      <Route path={"/alert-history"} component={AlertHistory} />
+      <Route path={"/transaction-history"} component={TransactionHistory} />
+      <Route path={"/notification-preferences"} component={NotificationPreferences} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
