@@ -1,222 +1,178 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 
 export default function Login() {
   const [, setLocation] = useLocation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [successMessage, setSuccessMessage] = useState("");
 
-  const validateEmail = (email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  const loginMutation = trpc.auth.login.useMutation({
+    onSuccess: () => {
+      toast.success("Login realizado com sucesso!");
+      setLocation("/");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao fazer login");
+      setErrors({ submit: error.message || "Erro ao fazer login" });
+    },
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: "" }));
+    }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!email.trim()) {
+    if (!formData.email.trim()) {
       newErrors.email = "Email é obrigatório";
-    } else if (!validateEmail(email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Email inválido";
     }
 
-    if (!password) {
+    if (!formData.password) {
       newErrors.password = "Senha é obrigatória";
     }
 
     setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-    if (Object.keys(newErrors).length > 0) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
       return;
     }
 
-    setIsLoading(true);
-    try {
-      // Simular login
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setSuccessMessage("Login realizado com sucesso!");
-      setTimeout(() => {
-        setLocation("/");
-      }, 1000);
-    } catch (error) {
-      setErrors({ submit: "Erro ao fazer login. Tente novamente." });
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation.mutate({
+      email: formData.email,
+      password: formData.password,
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-              🚗
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 flex items-center justify-center">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-8">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation("/")}
+            className="hover:bg-white"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Fazer Login</h1>
+            <p className="text-sm text-gray-600">Bem-vindo de volta ao comunyCAR</p>
           </div>
-          <CardTitle className="text-2xl">comunyCAR</CardTitle>
-          <CardDescription>Faça login na sua conta</CardDescription>
-        </CardHeader>
+        </div>
 
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Success Message */}
-            {successMessage && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2 text-green-800">
-                <CheckCircle className="w-5 h-5" />
-                <span className="text-sm font-semibold">{successMessage}</span>
-              </div>
-            )}
+        {/* Form Card */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle>Login</CardTitle>
+            <CardDescription>Entre com suas credenciais</CardDescription>
+          </CardHeader>
 
-            {/* Error Message */}
-            {errors.submit && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2 text-red-800">
-                <AlertCircle className="w-5 h-5" />
-                <span className="text-sm font-semibold">{errors.submit}</span>
-              </div>
-            )}
-
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setErrors(prev => ({ ...prev, email: "" }));
-                }}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                  errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                }`}
-              />
-              {errors.email && (
-                <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Senha
-              </label>
-              <div className="relative">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Mail className="w-4 h-4 inline mr-2" />
+                  Email
+                </label>
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="joao@example.com"
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                    errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
+                  }`}
+                />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  <Lock className="w-4 h-4 inline mr-2" />
+                  Senha
+                </label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
                   placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setErrors(prev => ({ ...prev, password: "" }));
-                  }}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 pr-10 ${
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                     errors.password ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
                   }`}
                 />
+                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+              </div>
+
+              {/* Submit Error */}
+              {errors.submit && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  {errors.submit}
+                </div>
+              )}
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={loginMutation.isPending}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg font-semibold transition-all"
+              >
+                {loginMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Entrando...
+                  </>
+                ) : (
+                  "Fazer Login"
+                )}
+              </Button>
+
+              {/* Links */}
+              <div className="flex gap-2 justify-between text-sm">
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-2.5 text-gray-600"
+                  onClick={() => setLocation("/forgot-password")}
+                  className="text-blue-600 hover:underline font-semibold"
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  Esqueceu a senha?
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLocation("/signup")}
+                  className="text-blue-600 hover:underline font-semibold"
+                >
+                  Criar conta
                 </button>
               </div>
-              {errors.password && (
-                <p className="text-red-600 text-sm mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.password}
-                </p>
-              )}
-            </div>
-
-            {/* Remember Me */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 text-blue-600 rounded"
-                />
-                <span className="text-sm text-gray-700">Lembrar-me</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => setLocation("/forgot-password")}
-                className="text-sm text-blue-600 hover:underline font-semibold"
-              >
-                Esqueceu a senha?
-              </button>
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2"
-            >
-              {isLoading ? "Entrando..." : "Entrar"}
-            </Button>
-
-            {/* Divider */}
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-600">ou</span>
-              </div>
-            </div>
-
-            {/* OAuth Buttons */}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => alert("Google login em desenvolvimento")}
-            >
-              🔵 Entrar com Google
-            </Button>
-
-            {/* Sign Up Link */}
-            <p className="text-center text-sm text-gray-600">
-              Não tem uma conta?{" "}
-              <button
-                type="button"
-                onClick={() => setLocation("/signup")}
-                className="text-blue-600 hover:underline font-semibold"
-              >
-                Cadastre-se
-              </button>
-            </p>
-          </form>
-
-          {/* Info Box */}
-          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-2">Demo Credentials</h3>
-            <p className="text-sm text-blue-800 mb-1">
-              <strong>Email:</strong> demo@example.com
-            </p>
-            <p className="text-sm text-blue-800">
-              <strong>Senha:</strong> Demo123!@#
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -1,13 +1,17 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+
+// Pages
+import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import ForgotPassword from "./pages/ForgotPassword";
+import VerifyEmail from "./pages/VerifyEmail";
+import Onboarding from "./pages/Onboarding";
 import SendAlert from "./pages/SendAlert";
 import Vehicles from "./pages/Vehicles";
 import BuyCredits from "./pages/BuyCredits";
@@ -17,43 +21,42 @@ import TransactionHistory from "./pages/TransactionHistory";
 import NotificationPreferences from "./pages/NotificationPreferences";
 import ReceivedMessages from "./pages/ReceivedMessages";
 import SentMessages from "./pages/SentMessages";
+import NotFound from "./pages/NotFound";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/login"} component={Login} />
-      <Route path={"/signup"} component={SignUp} />
-      <Route path={"/forgot-password"} component={ForgotPassword} />
-      <Route path={"/send-alert"} component={SendAlert} />
-      <Route path={"/vehicles"} component={Vehicles} />
-      <Route path={"/buy-credits"} component={BuyCredits} />
-      <Route path={"/profile"} component={Profile} />
-      <Route path={"/alert-history"} component={AlertHistory} />
-      <Route path={"/transaction-history"} component={TransactionHistory} />
-      <Route path={"/notification-preferences"} component={NotificationPreferences} />
-      <Route path={"/received-messages"} component={ReceivedMessages} />
-      <Route path={"/sent-messages"} component={SentMessages} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      {/* Public Routes */}
+      <Route path="/" component={Landing} />
+      <Route path="/login" component={Login} />
+      <Route path="/signup" component={SignUp} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/verify-email" component={VerifyEmail} />
+      
+      {/* Protected Routes */}
+      <Route path="/onboarding" component={Onboarding} />
+      <Route path="/home" component={Home} />
+      <Route path="/send-alert" component={SendAlert} />
+      <Route path="/vehicles" component={Vehicles} />
+      <Route path="/buy-credits" component={BuyCredits} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/alert-history" component={AlertHistory} />
+      <Route path="/transaction-history" component={TransactionHistory} />
+      <Route path="/notification-preferences" component={NotificationPreferences} />
+      <Route path="/received-messages" component={ReceivedMessages} />
+      <Route path="/sent-messages" component={SentMessages} />
+      
+      {/* 404 */}
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />
