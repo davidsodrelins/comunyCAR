@@ -261,3 +261,58 @@ export const passwordResetTokens = mysqlTable("password_reset_tokens", {
 
 export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 export type InsertPasswordResetToken = typeof passwordResetTokens.$inferInsert;
+
+
+/**
+ * Mensagens (alertas) enviadas entre usuários
+ */
+export const messages = mysqlTable("messages", {
+  id: int("id").autoincrement().primaryKey(),
+  senderId: int("sender_id").notNull(),
+  vehicleId: int("vehicle_id").notNull(),
+  messageType: mysqlEnum("message_type", ["fixed", "personalized"]).notNull(),
+  fixedAlertId: int("fixed_alert_id"), // Se for alerta fixo
+  messageContent: text("message_content"), // Se for personalizada
+  status: mysqlEnum("status", ["sent", "delivered", "read", "failed"]).default("sent").notNull(),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = typeof messages.$inferInsert;
+
+/**
+ * Reações às mensagens (emoji reactions)
+ */
+export const messageReactions = mysqlTable("message_reactions", {
+  id: int("id").autoincrement().primaryKey(),
+  messageId: int("message_id").notNull(),
+  userId: int("user_id").notNull(),
+  reactionType: mysqlEnum("reaction_type", [
+    "seen", // 👍 Visto
+    "thank_you", // ❤️ Obrigado
+    "urgent", // ⚠️ Urgente
+    "resolved", // ✅ Resolvido
+    "vehicle", // 🚗 Veículo
+    "later", // ⏰ Depois
+  ]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MessageReaction = typeof messageReactions.$inferSelect;
+export type InsertMessageReaction = typeof messageReactions.$inferInsert;
+
+/**
+ * Destinatários das mensagens (usuários que recebem a mensagem)
+ */
+export const messageRecipients = mysqlTable("message_recipients", {
+  id: int("id").autoincrement().primaryKey(),
+  messageId: int("message_id").notNull(),
+  recipientId: int("recipient_id").notNull(),
+  readAt: timestamp("read_at"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MessageRecipient = typeof messageRecipients.$inferSelect;
+export type InsertMessageRecipient = typeof messageRecipients.$inferInsert;
