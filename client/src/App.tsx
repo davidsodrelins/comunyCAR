@@ -5,12 +5,36 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
+import ForgotPassword from "./pages/ForgotPassword";
+import SendAlert from "./pages/SendAlert";
+import Vehicles from "./pages/Vehicles";
+import BuyCredits from "./pages/BuyCredits";
+import Profile from "./pages/Profile";
+import AlertHistory from "./pages/AlertHistory";
+import TransactionHistory from "./pages/TransactionHistory";
+import NotificationPreferences from "./pages/NotificationPreferences";
+import ReceivedMessages from "./pages/ReceivedMessages";
+import SentMessages from "./pages/SentMessages";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/login"} component={Login} />
+      <Route path={"/signup"} component={SignUp} />
+      <Route path={"/forgot-password"} component={ForgotPassword} />
+      <Route path={"/send-alert"} component={SendAlert} />
+      <Route path={"/vehicles"} component={Vehicles} />
+      <Route path={"/buy-credits"} component={BuyCredits} />
+      <Route path={"/profile"} component={Profile} />
+      <Route path={"/alert-history"} component={AlertHistory} />
+      <Route path={"/transaction-history"} component={TransactionHistory} />
+      <Route path={"/notification-preferences"} component={NotificationPreferences} />
+      <Route path={"/received-messages"} component={ReceivedMessages} />
+      <Route path={"/sent-messages"} component={SentMessages} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
