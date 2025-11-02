@@ -1,10 +1,53 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Lock, User, Phone, FileText, ArrowLeft, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { User, Mail, Phone, FileText, Lock, ArrowLeft, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+
+// Formatadores
+const formatCNPJ = (value: string) => {
+  const cleaned = value.replace(/\D/g, "");
+  if (cleaned.length <= 2) return cleaned;
+  if (cleaned.length <= 5) return `${cleaned.slice(0, 2)}.${cleaned.slice(2)}`;
+  if (cleaned.length <= 8) return `${cleaned.slice(0, 2)}.${cleaned.slice(2, 5)}.${cleaned.slice(5)}`;
+  if (cleaned.length <= 12) return `${cleaned.slice(0, 2)}.${cleaned.slice(2, 5)}.${cleaned.slice(5, 8)}/${cleaned.slice(8)}`;
+  return `${cleaned.slice(0, 2)}.${cleaned.slice(2, 5)}.${cleaned.slice(5, 8)}/${cleaned.slice(8, 12)}-${cleaned.slice(12, 14)}`;
+};
+
+const formatPhone = (value: string) => {
+  const cleaned = value.replace(/\D/g, "");
+  if (cleaned.length <= 2) return cleaned;
+  if (cleaned.length <= 7) return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`;
+  return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`;
+};
+
+const validateCNPJ = (cnpj: string): boolean => {
+  const cleaned = cnpj.replace(/\D/g, "");
+  if (cleaned.length !== 14) return false;
+
+  let sum = 0;
+  let remainder;
+
+  // Validar primeiro dígito
+  for (let i = 0; i < 12; i++) {
+    sum += parseInt(cleaned[i]) * (i === 0 ? 5 : i === 1 ? 4 : 12 - (i - 1));
+  }
+  remainder = sum % 11;
+  if (parseInt(cleaned[12]) !== (remainder < 2 ? 0 : 11 - remainder)) return false;
+
+  // Validar segundo dígito
+  sum = 0;
+  for (let i = 0; i < 13; i++) {
+    sum += parseInt(cleaned[i]) * (i === 0 ? 6 : i === 1 ? 5 : 13 - (i - 1));
+  }
+  remainder = sum % 11;
+  if (parseInt(cleaned[13]) !== (remainder < 2 ? 0 : 11 - remainder)) return false;
+
+  return true;
+};
 
 export default function SignUp() {
   const [, setLocation] = useLocation();
@@ -17,11 +60,12 @@ export default function SignUp() {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
 
   const registerMutation = trpc.auth.register.useMutation({
     onSuccess: () => {
-      toast.success("Cadastro realizado! Verifique seu email para ativar a conta.");
-      setLocation("/login");
+      toast.success("Cadastro realizado! Verifique seu email para confirmar.");
+      setSubmitted(true);
     },
     onError: (error) => {
       toast.error(error.message || "Erro ao cadastrar");
@@ -31,8 +75,15 @@ export default function SignUp() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Limpar erro do campo quando o usuário começa a digitar
+    let formattedValue = value;
+
+    if (name === "cnpj") {
+      formattedValue = formatCNPJ(value);
+    } else if (name === "phone") {
+      formattedValue = formatPhone(value);
+    }
+
+    setFormData(prev => ({ ...prev, [name]: formattedValue }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
@@ -41,38 +92,44 @@ export default function SignUp() {
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
+    // Nome
     if (!formData.name.trim()) {
       newErrors.name = "Nome é obrigatório";
-    } else if (formData.name.length < 3) {
+    } else if (formData.name.trim().length < 3) {
       newErrors.name = "Nome deve ter pelo menos 3 caracteres";
     }
 
+    // Email
     if (!formData.email.trim()) {
       newErrors.email = "Email é obrigatório";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Email inválido";
     }
 
+    // Telefone
     if (!formData.phone.trim()) {
       newErrors.phone = "Telefone é obrigatório";
     } else if (formData.phone.replace(/\D/g, "").length < 10) {
       newErrors.phone = "Telefone deve ter pelo menos 10 dígitos";
     }
 
+    // CNPJ
     if (!formData.cnpj.trim()) {
       newErrors.cnpj = "CNPJ é obrigatório";
-    } else if (formData.cnpj.replace(/\D/g, "").length !== 14) {
-      newErrors.cnpj = "CNPJ deve ter 14 dígitos";
+    } else if (!validateCNPJ(formData.cnpj)) {
+      newErrors.cnpj = "CNPJ inválido";
     }
 
+    // Senha
     if (!formData.password) {
       newErrors.password = "Senha é obrigatória";
     } else if (formData.password.length < 8) {
       newErrors.password = "Senha deve ter pelo menos 8 caracteres";
     }
 
+    // Confirmar Senha
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Confirme a senha";
+      newErrors.confirmPassword = "Confirmação de senha é obrigatória";
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "As senhas não correspondem";
     }
@@ -98,23 +155,49 @@ export default function SignUp() {
     });
   };
 
-  const formatCNPJ = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .replace(/(\d{2})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1/$2")
-      .replace(/(\d{4})(\d)/, "$1-$2")
-      .slice(0, 18);
-  };
-
-  const formatPhone = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .replace(/(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{5})(\d)/, "$1-$2")
-      .slice(0, 15);
-  };
+  if (submitted) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 flex items-center justify-center">
+        <div className="w-full max-w-md">
+          <Card className="shadow-lg">
+            <CardContent className="pt-12 pb-12 text-center">
+              <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Cadastro Realizado!</h2>
+              <p className="text-gray-600 mb-2">
+                Verifique seu email para confirmar sua conta.
+              </p>
+              <p className="text-sm text-gray-500 mb-6">
+                Enviamos um link de confirmação para <strong>{formData.email}</strong>
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-left">
+                <p className="text-blue-900 text-sm">
+                  <strong>O que fazer agora:</strong>
+                </p>
+                <ol className="list-decimal list-inside text-blue-800 text-sm space-y-1 mt-2">
+                  <li>Abra seu email</li>
+                  <li>Clique no link de confirmação</li>
+                  <li>Volte aqui e faça login</li>
+                </ol>
+              </div>
+              <Button
+                onClick={() => setLocation("/login")}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-3"
+              >
+                Ir para Login
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setLocation("/")}
+                className="w-full"
+              >
+                Voltar para Home
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4 flex items-center justify-center">
@@ -138,27 +221,36 @@ export default function SignUp() {
         {/* Form Card */}
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle>Cadastro</CardTitle>
-            <CardDescription>Preencha os dados abaixo para criar sua conta</CardDescription>
+            <CardTitle>Cadastro de Usuário</CardTitle>
+            <CardDescription>
+              Preencha os dados abaixo para criar sua conta
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Name */}
+              {/* Submit Error */}
+              {errors.submit && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-red-700 text-sm">{errors.submit}</p>
+                </div>
+              )}
+
+              {/* Nome */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   <User className="w-4 h-4 inline mr-2" />
                   Nome Completo
                 </label>
-                <input
+                <Input
                   type="text"
                   name="name"
+                  placeholder="João Silva"
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder="João Silva"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    errors.name ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                  }`}
+                  disabled={registerMutation.isPending}
+                  className={errors.name ? "border-red-500" : ""}
                 />
                 {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
               </div>
@@ -169,40 +261,32 @@ export default function SignUp() {
                   <Mail className="w-4 h-4 inline mr-2" />
                   Email
                 </label>
-                <input
+                <Input
                   type="email"
                   name="email"
+                  placeholder="joao@example.com"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="joao@example.com"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    errors.email ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                  }`}
+                  disabled={registerMutation.isPending}
+                  className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
               </div>
 
-              {/* Phone */}
+              {/* Telefone */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   <Phone className="w-4 h-4 inline mr-2" />
                   Telefone
                 </label>
-                <input
+                <Input
                   type="tel"
                   name="phone"
+                  placeholder="(11) 99999-9999"
                   value={formData.phone}
-                  onChange={(e) => {
-                    const formatted = formatPhone(e.target.value);
-                    setFormData(prev => ({ ...prev, phone: formatted }));
-                    if (errors.phone) {
-                      setErrors(prev => ({ ...prev, phone: "" }));
-                    }
-                  }}
-                  placeholder="(11) 98765-4321"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    errors.phone ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                  }`}
+                  onChange={handleChange}
+                  disabled={registerMutation.isPending}
+                  className={errors.phone ? "border-red-500" : ""}
                 />
                 {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
               </div>
@@ -213,69 +297,65 @@ export default function SignUp() {
                   <FileText className="w-4 h-4 inline mr-2" />
                   CNPJ
                 </label>
-                <input
+                <Input
                   type="text"
                   name="cnpj"
-                  value={formData.cnpj}
-                  onChange={(e) => {
-                    const formatted = formatCNPJ(e.target.value);
-                    setFormData(prev => ({ ...prev, cnpj: formatted }));
-                    if (errors.cnpj) {
-                      setErrors(prev => ({ ...prev, cnpj: "" }));
-                    }
-                  }}
                   placeholder="00.000.000/0000-00"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    errors.cnpj ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                  }`}
+                  value={formData.cnpj}
+                  onChange={handleChange}
+                  disabled={registerMutation.isPending}
+                  className={errors.cnpj ? "border-red-500" : ""}
                 />
                 {errors.cnpj && <p className="text-red-500 text-sm mt-1">{errors.cnpj}</p>}
               </div>
 
-              {/* Password */}
+              {/* Senha */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   <Lock className="w-4 h-4 inline mr-2" />
                   Senha
                 </label>
-                <input
+                <Input
                   type="password"
                   name="password"
+                  placeholder="Mínimo 8 caracteres"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="••••••••"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    errors.password ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                  }`}
+                  disabled={registerMutation.isPending}
+                  className={errors.password ? "border-red-500" : ""}
                 />
                 {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
               </div>
 
-              {/* Confirm Password */}
+              {/* Confirmar Senha */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   <Lock className="w-4 h-4 inline mr-2" />
                   Confirmar Senha
                 </label>
-                <input
+                <Input
                   type="password"
                   name="confirmPassword"
+                  placeholder="Confirme sua senha"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="••••••••"
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                    errors.confirmPassword ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
-                  }`}
+                  disabled={registerMutation.isPending}
+                  className={errors.confirmPassword ? "border-red-500" : ""}
                 />
-                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && (
+                  <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+                )}
               </div>
 
-              {/* Submit Error */}
-              {errors.submit && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {errors.submit}
-                </div>
-              )}
+              {/* Info */}
+              <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+                <p className="font-semibold mb-1">Próximos passos:</p>
+                <ul className="list-disc list-inside space-y-1 text-xs">
+                  <li>Você receberá um email de confirmação</li>
+                  <li>Clique no link para ativar sua conta</li>
+                  <li>Faça login com seu email e senha</li>
+                </ul>
+              </div>
 
               {/* Submit Button */}
               <Button
@@ -286,7 +366,7 @@ export default function SignUp() {
                 {registerMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Criando conta...
+                    Criando Conta...
                   </>
                 ) : (
                   "Criar Conta"

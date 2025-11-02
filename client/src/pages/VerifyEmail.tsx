@@ -40,9 +40,20 @@ export default function VerifyEmail() {
     verifyEmailMutation.mutate({ token: emailToken });
   };
 
+  const resendVerificationMutation = trpc.auth.resendVerificationEmail.useMutation({
+    onSuccess: () => {
+      toast.success("Email de verificação reenviado!");
+      setError(null);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Erro ao reenviar email");
+    },
+  });
+
   const handleResendEmail = async () => {
-    // Implementar reenvio de email
-    toast.info("Email de verificação reenviado!");
+    if (email) {
+      resendVerificationMutation.mutate({ email });
+    }
   };
 
   if (isVerified) {
